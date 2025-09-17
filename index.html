@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HSC Class Routine Reminder - XI</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #b3e5fc, #4fc3f7); min-height: 100vh; padding: 20px; color: #212121; }
+        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); }
+        h1 { text-align: center; color: #01579b; font-size: 2.5em; margin-bottom: 25px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
+        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: center; margin-bottom: 25px; }
+        select, input { padding: 12px; border: 1px solid #0288d1; border-radius: 10px; font-size: 1em; background: #f5f5f5; transition: border-color 0.3s; }
+        select:focus, input:focus { border-color: #01579b; outline: none; }
+        button { padding: 12px 24px; background: #0288d1; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1em; transition: background 0.3s, transform 0.2s; position: relative; }
+        button:hover:not(:disabled) { background: #01579b; transform: translateY(-2px); }
+        button:active:not(:disabled) { transform: scale(0.95); }
+        button:disabled { background: #90a4ae; cursor: not-allowed; }
+        select:focus, input:focus, button:focus { outline: 2px solid #01579b; outline-offset: 2px; }
+        .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+        .current-class { margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #0277bd, #0288d1); color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); animation: fadeIn 0.5s; position: sticky; top: 20px; z-index: 10; transition: box-shadow 0.3s; }
+        .current-class:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+        .current-class p { margin: 8px 0; font-size: 1.1em; }
+        #progressBar { display: none; height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 10px; overflow: hidden; position: relative; }
+        #progressFill { height: 100%; background: linear-gradient(90deg, #fff, #4fc3f7); width: 0; transition: width 1s linear; border-radius: 4px; }
+        #progressBar:hover::after { content: attr(title); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #01579b; color: white; padding: 5px; border-radius: 5px; font-size: 0.9em; }
+        #liveClock { text-align: right; color: #01579b; font-size: 1.1em; margin-bottom: 10px; }
+        .table-container { margin-top: 20px; overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; background: #f5f5f5; border-radius: 10px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
+        th { background: #01579b; color: white; font-weight: bold; }
+        th::before { margin-right: 5px; }
+        th:nth-child(1)::before { content: "🕐 "; }
+        th:nth-child(2)::before { content: "📚 "; }
+        th:nth-child(3)::before { content: "🏠 "; }
+        th:nth-child(4)::before { content: "✅ "; }
+        tr:nth-child(even) { background: #e1f5fe; }
+        tr:hover { background: #b3e5fc; }
+        .highlight { background: #fff9c4 !important; }
+        .search-match { font-weight: bold; color: #01579b; }
+        #notes { margin-top: 30px; }
+        #notes h3 { color: #01579b; margin-bottom: 12px; }
+        #noteList li { background: #e1f5fe; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        #noteList button { background: #d32f2f; padding: 6px 12px; font-size: 0.9em; }
+        #noteList button:hover { background: #b71c1c; transform: translateY(-2px); }
+        #attendanceSummary { margin: 10px 0; color: #01579b; font-weight: bold; }
+        h2 { font-size: 1.8em; border-bottom: 2px solid #0288d1; padding-bottom: 10px; margin-bottom: 15px; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 600px) {
+            select, input, button { width: 100%; margin: 6px 0; }
+            h1 { font-size: 2em; }
+            table { font-size: 0.9em; }
+            .current-class { font-size: 0.95em; position: static; }
+        }
+        @media print { 
+            body { background: white; }
+            .container { box-shadow: none; }
+            .controls, #notes, .current-class, button, #liveClock, #attendanceSummary, th:nth-child(4), td:nth-child(4) { display: none; }
+            table { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HSC Class Routine Reminder (XI)</h1>
+        
+        <!-- Live Clock -->
+        <div id="liveClock" role="timer"></div>
+        
+        <!-- Controls -->
+        <div class="controls">
+            <label for="groupSelect">গ্রুপ সিলেক্ট করুন:</label>
+            <select id="groupSelect" aria-label="গ্রুপ সিলেক্ট করুন">
+                <option value="">-- সিলেক্ট করুন --</option>
+                <option value="science" selected>Science</option>
+                <option value="commerce">Commerce</option>
+                <option value="humanities">Humanities</option>
+            </select>
+            <label for="daySelect">দিন সিলেক্ট করুন:</label>
+            <select id="daySelect" aria-label="দিন সিলেক্ট করুন">
+                <option value="">আজকের রুটিন</option>
+                <option value="sunday">রবিবার</option>
+                <option value="monday">সোমবার</option>
+                <option value="tuesday" selected>মঙ্গলবার</option>
+                <option value="wednesday">বুধবার</option>
+                <option value="thursday">বৃহস্পতিবার</option>
+            </select>
+            <input type="text" id="searchInput" placeholder="বিষয় (Bengali/English) বা রুম সার্চ করুন (যেমন: বাংলা, Physics, Lab-1)" aria-label="বিষয় বা রুম সার্চ করুন">
+            <button onclick="searchRoutine()">সার্চ</button>
+            <button onclick="clearSearch()">সার্চ ক্লিয়ার</button>
+            <button onclick="window.print()">প্রিন্ট করুন</button>
+            <button id="notificationBtn" onclick="toggleNotifications()">🔔 নোটিফিকেশন চালু</button>
+            <button onclick="resetAttendance()">অ্যাটেন্ডেন্স রিসেট</button>
+        </div>
+        
+        <!-- Current Class and Time Left -->
+        <div class="current-class" role="region" aria-live="polite">
+            <p id="currentClass">বর্তমান ক্লাস: কোন ক্লাস চলছে না</p>
+            <p id="timeLeft">⏳ সময় বাকি: ---</p>
+            <div id="progressBar">
+                <div id="progressFill"></div>
+            </div>
+        </div>
+        
+        <!-- Attendance Summary -->
+        <div id="attendanceSummary"></div>
+        
+        <!-- Routine Table -->
+        <h2 id="todayHeader">আজকের রুটিন</h2>
+        <div class="table-container">
+            <table id="routine">
+                <thead>
+                    <tr>
+                        <th>সময়</th>
+                        <th>বিষয়</th>
+                        <th>রুম নং</th>
+                        <th>অ্যাটেন্ডেন্স</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        
+        <!-- Custom Notes -->
+        <div id="notes">
+            <h3>কাস্টম নোট যোগ করুন (যেমন: অ্যাসাইনমেন্ট ডেডলাইন)</h3>
+            <input type="text" id="noteInput" placeholder="নোট লিখুন..." aria-label="নোট লিখুন">
+            <input type="date" id="noteDueDate" aria-label="ডেডলাইন তারিখ">
+            <button onclick="addNote()">যোগ করুন</button>
+            <button onclick="exportNotes('txt')">টেক্সট হিসেবে এক্সপোর্ট</button>
+            <button onclick="exportNotes('pdf')">PDF হিসেবে এক্সপোর্ট</button>
+            <button onclick="exportNotes('excel')">Excel হিসেবে এক্সপোর্ট</button>
+            <ul id="noteList"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Subject translations (English to Bengali)
+        const subjectTranslations = {
+            "bangla": ["বাংলা (১০১)", "বাংলা (১০২)"],
+            "english": ["ইংরেজী (১০৭)", "ইংরেজী (১০৮)"],
+            "physics": ["পদার্থ (১৭৪)", "পদার্থ (১৭৫)"],
+            "chemistry": ["রসায়ন (১৭৬)", "রসায়ন (১৭৭)"],
+            "biology": ["জীববিজ্ঞান (১৭৮)", "জীববিজ্ঞান (১৭৯)"],
+            "higher math": ["উচ্চতর গণিত (২৬৫)", "উচ্চতর গণিত (২৬৬)"],
+            "ict": ["ICT (২৭৫)"],
+            "accounting": ["হিসাববিজ্ঞান (২৫৩)", "হিসাববিজ্ঞান (২৫৪)"],
+            "economics": ["অর্থনীতি (১০৯)", "অর্থনীতি (১১০)"],
+            "business organization": ["ব্যবসায় সংগঠন (২৭৭)", "ব্যবসায় সংগঠন (২৭৮)"],
+            "production management": ["উৎপাদন ব্যবস্থাপনা (২৮৬)", "উৎপাদন ব্যবস্থাপনা (২৮৭)"],
+            "secretarial science": ["সাচিবিকবিদ্যা (২৩৫)", "সাচিবিকবিদ্যা (২৩৬)"],
+            "sociology": ["সমাজবিজ্ঞান (১১৭)", "সমাজবিজ্ঞান (১১৮)"],
+            "history": ["ইতিহাস (৩০৪)", "ইতিহাস (৩০৫)"],
+            "geography": ["ভূগোল (১২৫)"],
+            "logic": ["যুক্তিবিদ্যা (১২১)", "যুক্তিবিদ্যা (১২২)"],
+            "social work": ["সমাজকর্ম (২৭১)", "সমাজকর্ম (২৭২)"],
+            "civics": ["পৌরনীতি (২৬৯)", "পৌরনীতি (২৭০)"],
+            "islamic history": ["ইসলামী ইতিহাস (২৬৭)", "ইসলামী ইতিহাস (২৬৮)"],
+            "home science": ["গার্হস্থ্য বিজ্ঞান (২৭৩)", "গার্হস্থ্য বিজ্ঞান (২৭৪)"],
+            "agriculture": ["কৃষি শিক্ষা (২৩৯)", "কৃষি শিক্ষা (২৪০)"],
+            "islamic education": ["ইসলাম শিক্ষা (২৪৯)"]
+        };
+
+        // Routine Data
+        const routineData = {
+            "science": {
+                "sunday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
+                ],
+                "monday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-1"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৭)", "room": "Lab-2"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০২)", "room": "A-101"}
+                ],
+                "tuesday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
+                ],
+                "wednesday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-1"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৭)", "room": "Lab-2"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-101"}
+                ],
+                "thursday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "বাংলা (১০২)", "room": "A-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "ইংরেজী (১০৮)", "room": "B-102"}
+                ]
+            },
+            "commerce": {
+                "sunday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-101"}
+                ],
+                "monday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১১০)", "room": "Eco-102"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-101"}
+                ],
+                "tuesday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-101"}
+                ],
+                "wednesday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "সাচিবিকবিদ্যা (২৩৬)", "room": "Sec-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-101"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১১০)", "room": "Eco-102"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০১)", "room": "A-101"}
+                ],
+                "thursday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-101"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"}
+                ]
+            },
+            "humanities": {
+                "sunday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৪)", "room": "His-102"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"}
+                ],
+                "monday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭১)", "room": "SW-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-101"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "ইসলামী ইতিহাস (২৬৭)", "room": "IH-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৩)", "room": "HS-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "কৃষি শিক্ষা (২৩৯)", "room": "Agri-101"}
+                ],
+                "tuesday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-101"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "সমাজবিজ্ঞান (১১৮)", "room": "Soc-101"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "ইতিহাস (৩০৫)", "room": "His-102"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২২)", "room": "Logic-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৭০)", "room": "Civ-101"}
+                ],
+                "wednesday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭২)", "room": "SW-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "ইসলামী ইতিহাস (২৬৮)", "room": "IH-101"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৪)", "room": "HS-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "কৃষি শিক্ষা (২৪০)", "room": "Agri-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "ইসলাম শিক্ষা (২৪৯)", "room": "IE-101"}
+                ],
+                "thursday": [
+                    {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-101"},
+                    {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৪)", "room": "His-102"},
+                    {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-101"},
+                    {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-101"},
+                    {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-101"}
+                ]
+            }
+        };
+
+        let currentGroup = 'science';
+        let selectedDay = '';
+        let notes = JSON.parse(localStorage.getItem('customNotes')) || [];
+        let notificationEnabled = false;
+
+        // Live Clock
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('liveClock').textContent = `বর্তমান সময়: ${now.toLocaleTimeString('bn-BD', { hour12: true })}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        // Auto-focus search input and Ctrl+K shortcut
+        document.getElementById('searchInput').focus();
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'k') {
+                e.preventDefault();
+                document.getElementById('searchInput').focus();
+            }
+        });
+
+        // Group and Day select change
+        document.getElementById('groupSelect').addEventListener('change', function() {
+            currentGroup = this.value;
+            showRoutine();
+            updateCurrentClass();
+            updateAttendanceSummary();
+            startReminders();
+        });
+
+        document.getElementById('daySelect').addEventListener('change', function() {
+            selectedDay = this.value;
+            showRoutine();
+            updateAttendanceSummary();
+        });
+
+        // Show routine based on selected day or today
+        function showRoutine() {
+            if (!currentGroup) {
+                document.getElementById('routine').querySelector('tbody').innerHTML = '<tr><td colspan="4">গ্রুপ সিলেক্ট করুন</td></tr>';
+                document.getElementById('todayHeader').textContent = 'রুটিন';
+                document.getElementById('attendanceSummary').textContent = '';
+                return;
+            }
+            const day = selectedDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+            const routine = routineData[currentGroup][day] || [];
+            const tbody = document.getElementById('routine').querySelector('tbody');
+            tbody.innerHTML = '';
+            if (routine.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4">এই দিনে কোন ক্লাস নেই।</td></tr>';
+            } else {
+                routine.forEach(item => {
+                    const isAttended = localStorage.getItem(`attendance_${currentGroup}_${day}_${item.time}_${item.subject}`) === 'true';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.time}</td>
+                        <td>${item.subject}</td>
+                        <td>${item.room}</td>
+                        <td><input type="checkbox" ${isAttended ? 'checked' : ''} onchange="toggleAttendance('${currentGroup}', '${day}', '${item.time}', '${item.subject}', this.checked)"></td>
+                    `;
+                    if (!selectedDay && isCurrentClass(item)) row.classList.add('highlight');
+                    tbody.appendChild(row);
+                });
+            }
+            document.getElementById('todayHeader').textContent = selectedDay ? `${day.toUpperCase()} - ${currentGroup.toUpperCase()} এর রুটিন` : `আজকের রুটিন (${day.toUpperCase()}) - ${currentGroup.toUpperCase()}`;
+            updateAttendanceSummary();
+        }
+
+        function parseTime(timeStr) {
+            const [hours, minutes, period] = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i).slice(1);
+            let h = parseInt(hours);
+            const m = parseInt(minutes);
+            if (period.toUpperCase() === 'PM' && h !== 12) h += 12;
+            if (period.toUpperCase() === 'AM' && h === 12) h = 0;
+            return { hours: h, minutes: m };
+        }
+
+        function isCurrentClass(item) {
+            const now = new Date();
+            const [startTime, endTime] = item.time.split('-').map(t => t.trim());
+            const { hours: startH, minutes: startM } = parseTime(startTime);
+            const { hours: endH, minutes: endM } = parseTime(endTime);
+            const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM);
+            const classEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
+            return now >= classStart && now <= classEnd;
+        }
+
+        // Update current class and time left
+        function updateCurrentClass() {
+            if (!currentGroup) {
+                document.getElementById('currentClass').textContent = 'বর্তমান ক্লাস: গ্রুপ সিলেক্ট করুন';
+                document.getElementById('timeLeft').textContent = '⏳ সময় বাকি: ---';
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('progressBar').removeAttribute('title');
+                return;
+            }
+            const now = new Date();
+            const today = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+            const routine = routineData[currentGroup][today] || [];
+            let currentClass = null;
+            let nextClass = null;
+
+            routine.forEach(item => {
+                const [startTime, endTime] = item.time.split('-').map(t => t.trim());
+                const { hours: startH, minutes: startM } = parseTime(startTime);
+                const { hours: endH, minutes: endM } = parseTime(endTime);
+                const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM);
+                const classEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
+                if (now >= classStart && now <= classEnd) {
+                    currentClass = item;
+                }
+                if (!nextClass && now < classStart) {
+                    nextClass = item;
+                }
+            });
+
+            if (currentClass) {
+                const [startTime, endTime] = currentClass.time.split('-').map(t => t.trim());
+                const { hours: startH, minutes: startM } = parseTime(startTime);
+                const { hours: endH, minutes: endM } = parseTime(endTime);
+                const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM);
+                const classEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
+                const endTimeStr = classEnd.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' });
+                document.getElementById('currentClass').textContent = `🕑 চলমান ক্লাস: ${currentClass.subject} (Room: ${currentClass.room}) | শেষ হবে ${endTimeStr}`;
+                const totalDuration = classEnd - classStart;
+                const timeLeftMs = classEnd - now;
+                if (timeLeftMs > 0) {
+                    const minutes = Math.floor(timeLeftMs / 60000);
+                    const seconds = Math.floor((timeLeftMs % 60000) / 1000);
+                    document.getElementById('timeLeft').textContent = `⏳ সময় বাকি: ${minutes} মিনিট ${seconds} সেকেন্ড`;
+                    document.getElementById('progressBar').setAttribute('title', `${minutes} মিনিট ${seconds} সেকেন্ড বাকি`);
+                    const progress = ((totalDuration - timeLeftMs) / totalDuration) * 100;
+                    document.getElementById('progressBar').style.display = 'block';
+                    document.getElementById('progressFill').style.width = `${progress}%`;
+                } else {
+                    document.getElementById('timeLeft').textContent = '⏳ সময় বাকি: ক্লাস শেষ';
+                    document.getElementById('progressBar').style.display = 'none';
+                    document.getElementById('progressBar').removeAttribute('title');
+                }
+            } else if (nextClass) {
+                const { hours: startH, minutes: startM } = parseTime(nextClass.time.split('-')[0].trim());
+                const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM);
+                const timeLeftMs = classStart - now;
+                const minutes = Math.floor(timeLeftMs / 60000);
+                document.getElementById('currentClass').textContent = `✅ এখন ব্রেক চলছে, পরবর্তী ক্লাস শুরু হবে ${minutes} মিনিট পরে`;
+                document.getElementById('timeLeft').textContent = `⏳ সময় বাকি: পরবর্তী ক্লাস (${nextClass.subject}): ${minutes} মিনিট`;
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('progressBar').removeAttribute('title');
+            } else {
+                document.getElementById('currentClass').textContent = `✅ এখন ব্রেক চলছে, আজ আর কোন ক্লাস নেই`;
+                document.getElementById('timeLeft').textContent = `⏳ সময় বাকি: এখন কোন ক্লাস নেই`;
+                document.getElementById('progressBar').style.display = 'none';
+                document.getElementById('progressBar').removeAttribute('title');
+            }
+        }
+
+        // Attendance tracking
+        function toggleAttendance(group, day, time, subject, checked) {
+            localStorage.setItem(`attendance_${group}_${day}_${time}_${subject}`, checked);
+            updateAttendanceSummary();
+        }
+
+        function updateAttendanceSummary() {
+            if (!currentGroup) return;
+            const day = selectedDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+            const routine = routineData[currentGroup][day] || [];
+            const attended = routine.filter(item => localStorage.getItem(`attendance_${currentGroup}_${day}_${item.time}_${item.subject}`) === 'true').length;
+            const total = routine.length;
+            document.getElementById('attendanceSummary').textContent = total ? `আজ ${attended}/${total} ক্লাস অ্যাটেন্ড করা হয়েছে` : '';
+        }
+
+        function resetAttendance() {
+            if (confirm('সব অ্যাটেন্ডেন্স রিসেট করতে চান?')) {
+                Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('attendance_')) localStorage.removeItem(key);
+                });
+                showRoutine();
+                updateAttendanceSummary();
+            }
+        }
+
+        // Search function (by subject in Bengali/English or room)
+        function searchRoutine() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            if (!currentGroup || !query) {
+                showRoutine();
+                return;
+            }
+            let results = [];
+            Object.keys(routineData[currentGroup]).forEach(day => {
+                routineData[currentGroup][day].forEach(item => {
+                    let matched = false;
+                    let subjectDisplay = item.subject;
+                    let roomDisplay = item.room;
+
+                    // Check Bengali subject and room
+                    if (item.subject.toLowerCase().includes(query) || item.room.toLowerCase().includes(query)) {
+                        matched = true;
+                        if (item.subject.toLowerCase().includes(query)) {
+                            subjectDisplay = item.subject.replace(new RegExp(query, 'gi'), `<span class="search-match">$&</span>`);
+                        }
+                        if (item.room.toLowerCase().includes(query)) {
+                            roomDisplay = item.room.replace(new RegExp(query, 'gi'), `<span class="search-match">$&</span>`);
+                        }
+                    }
+
+                    // Check English subject
+                    Object.keys(subjectTranslations).forEach(englishSubject => {
+                        if (englishSubject.toLowerCase().includes(query) && subjectTranslations[englishSubject].includes(item.subject)) {
+                            matched = true;
+                            subjectDisplay = item.subject.replace(new RegExp(item.subject.split(' (')[0], 'gi'), `<span class="search-match">${item.subject.split(' (')[0]}</span>`);
+                        }
+                    });
+
+                    if (matched) {
+                        results.push({ day, ...item, subjectDisplay, roomDisplay });
+                    }
+                });
+            });
+            const tbody = document.getElementById('routine').querySelector('tbody');
+            tbody.innerHTML = '';
+            document.getElementById('todayHeader').textContent = `সার্চ ফলাফল: "${query}"`;
+            if (results.length) {
+                results.forEach(r => {
+                    const isAttended = localStorage.getItem(`attendance_${currentGroup}_${r.day}_${r.time}_${r.subject}`) === 'true';
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${r.day.toUpperCase()} ${r.time}</td>
+                        <td>${r.subjectDisplay}</td>
+                        <td>${r.roomDisplay}</td>
+                        <td><input type="checkbox" ${isAttended ? 'checked' : ''} onchange="toggleAttendance('${currentGroup}', '${r.day}', '${r.time}', '${r.subject}', this.checked)"></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="4">কোন ফলাফল পাওয়া যায়নি।</td></tr>';
+            }
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            showRoutine();
+        }
+
+        // Toggle notifications
+        function toggleNotifications() {
+            if (notificationEnabled) {
+                notificationEnabled = false;
+                document.getElementById('notificationBtn').innerHTML = '🔔 নোটিফিকেশন চালু';
+                alert('নোটিফিকেশন বন্ধ করা হয়েছে!');
+            } else {
+                if (Notification.permission === 'granted') {
+                    notificationEnabled = true;
+                    document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ';
+                    alert('নোটিফিকেশন চালু!');
+                    startReminders();
+                } else {
+                    Notification.requestPermission().then(permission => {
+                        if (permission === 'granted') {
+                            notificationEnabled = true;
+                            document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ';
+                            alert('নোটিফিকেশন চালু!');
+                            startReminders();
+                        }
+                    });
+                }
+            }
+        }
+
+        // Start reminders (check every minute)
+        function startReminders() {
+            if (!notificationEnabled || !currentGroup) return;
+            setInterval(() => {
+                const now = new Date();
+                const today = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                const routine = routineData[currentGroup][today] || [];
+                routine.forEach(item => {
+                    const [startTime] = item.time.split('-').map(t => t.trim());
+                    const { hours: h, minutes: m } = parseTime(startTime);
+                    const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), h, m);
+                    const fiveMinBefore = new Date(classStart.getTime() - 5 * 60000);
+                    const notifiedKey = `notified_${item.subject}_${today}_${now.getDate()}`;
+                    if (now >= fiveMinBefore && now < classStart && !localStorage.getItem(notifiedKey)) {
+                        new Notification('ক্লাস রিমাইন্ডার!', { body: `${item.subject} শুরু হতে যাচ্ছে ${classStart.toLocaleTimeString('en-US', { hour12: true })} এ! রুম: ${item.room}` });
+                        localStorage.setItem(notifiedKey, 'true');
+                    }
+                });
+
+                // Note deadline reminders
+                notes.forEach((note, index) => {
+                    if (note.dueDate) {
+                        const dueDate = new Date(note.dueDate);
+                        const nowDate = new Date();
+                        const notifiedKey = `notified_note_${index}_${note.dueDate}`;
+                        if (dueDate.toDateString() === nowDate.toDateString() && now.getHours() >= 9 && !localStorage.getItem(notifiedKey)) {
+                            new Notification('নোট ডেডলাইন রিমাইন্ডার!', { body: `নোট: ${note.text} এর ডেডলাইন আজ!` });
+                            localStorage.setItem(notifiedKey, 'true');
+                        }
+                    }
+                });
+            }, 60000);
+        }
+
+        // Add custom note with due date
+        function addNote() {
+            const note = document.getElementById('noteInput').value;
+            const dueDate = document.getElementById('noteDueDate').value;
+            if (note) {
+                notes.push({text: note, date: new Date().toLocaleDateString(), dueDate: dueDate || null});
+                localStorage.setItem('customNotes', JSON.stringify(notes));
+                document.getElementById('noteInput').value = '';
+                document.getElementById('noteDueDate').value = '';
+                showNotes();
+                alert('✅ নোট যোগ করা হয়েছে');
+            }
+        }
+
+        // Show notes
+        function showNotes() {
+            const list = document.getElementById('noteList');
+            list.innerHTML = notes.map((n, index) => `<li>${n.text} - ${n.date}${n.dueDate ? ` (ডেডলাইন: ${n.dueDate})` : ''} <button onclick="deleteNote(${index})">মুছুন</button></li>`).join('');
+        }
+
+        // Delete note
+        function deleteNote(index) {
+            notes.splice(index, 1);
+            localStorage.setItem('customNotes', JSON.stringify(notes));
+            showNotes();
+        }
+
+        // Export notes (Text, PDF, Excel)
+        function exportNotes(format) {
+            const buttons = document.querySelectorAll('#notes button');
+            buttons.forEach(btn => btn.disabled = true);
+            const exportButtons = ['txt', 'pdf', 'excel'].map(f => document.querySelector(`#notes button[onclick="exportNotes('${f}')"]`));
+            exportButtons.forEach(btn => btn.innerHTML = '<span class="loading"></span>');
+
+            setTimeout(() => {
+                if (format === 'txt') {
+                    const text = notes.map(n => `${n.text} - ${n.date}${n.dueDate ? ` (Due: ${n.dueDate})` : ''}`).join('\n');
+                    const blob = new Blob([text], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'hsc_notes.txt';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } else if (format === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    doc.setFont('Helvetica', 'normal');
+                    doc.text('HSC Custom Notes', 10, 10);
+                    notes.forEach((n, i) => {
+                        doc.text(`${i + 1}. ${n.text} - ${n.date}${n.dueDate ? ` (Due: ${n.dueDate})` : ''}`, 10, 20 + i * 10);
+                    });
+                    doc.save('hsc_notes.pdf');
+                } else if (format === 'excel') {
+                    const ws_data = [['Note', 'Date', 'Due Date']];
+                    notes.forEach(n => ws_data.push([n.text, n.date, n.dueDate || 'N/A']));
+                    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, ws, 'Notes');
+                    XLSX.writeFile(wb, 'hsc_notes.xlsx');
+                }
+
+                buttons.forEach(btn => btn.disabled = false);
+                exportButtons[0].innerHTML = 'টেক্সট হিসেবে এক্সপোর্ট';
+                exportButtons[1].innerHTML = 'PDF হিসেবে এক্সপোর্ট';
+                exportButtons[2].innerHTML = 'Excel হিসেবে এক্সপোর্ট';
+            }, 500);
+        }
+
+        // Update current class and time left every second
+        setInterval(updateCurrentClass, 1000);
+
+        // Initial load
+        showNotes();
+        showRoutine();
+        updateCurrentClass();
+        updateAttendanceSummary();
+        startReminders();
+    </script>
+</body>
+</html>
