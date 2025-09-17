@@ -3,35 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HSC Class Routine Reminder - XI</title>
+    <title>HSC Class Routine Reminder - XI & XII</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0288d11f; min-height: 100vh; padding: 0; color: #212121; }
-        .container { max-width: 900px; margin: 100px auto; background: white; padding: 20px; border-radius: 4px; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); }
-        h1 { text-align: center; color: #01579b; font-size: 2.5em; margin-bottom: 25px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
-        .controls { display: block; text-align: center;grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: center; margin-bottom: 25px; }
+        /**:focus,button:focus, button:hover {outline: none;border: none; box-shadow: none;}*/
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0288d114; min-height: 100vh; padding: 0; color: #212121; }
+        .container { max-width: 900px; margin: 100px auto 50px auto; background: #ffffff8c; padding: 20px 20px 40px 20px; border-radius: 4px;}
+        h1 { text-align: center; color: #0288d1; font-size: 2.8em; margin-bottom: 25px; }
+        .controls { display: grid; grid-template-columns: auto auto auto; gap: 12px; align-items: center; margin-bottom: 25px; }
         select, input { padding: 12px; border: 1px solid #0288d1; border-radius: 10px; font-size: 1em; background: #f5f5f5; transition: border-color 0.3s; }
         select:focus, input:focus { border-color: #01579b; outline: none; }
         button { padding: 12px 24px; background: #0288d1; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1em; transition: background 0.3s, transform 0.2s; position: relative; }
         button:hover:not(:disabled) { background: #01579b; transform: translateY(-2px); }
         button:active:not(:disabled) { transform: scale(0.95); }
         button:disabled { background: #90a4ae; cursor: not-allowed; }
-        select:focus, input:focus, button:focus { outline: 2px solid #01579b; outline-offset: 2px; }
+        select:focus, input:focus, button:focus { outline: none; outline-offset: none; }
         .loading { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
-        .current-class { margin: 20px 0; padding: 20px; background: linear-gradient(135deg, #0277bd, #0288d1); color: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); animation: fadeIn 0.5s; position: sticky; top: 20px; z-index: 10; transition: box-shadow 0.3s; }
-        .current-class:hover { box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3); }
+        .current-class {margin: 20px auto 40px auto; padding: 20px; background: #e0f1f9; color: #01579b; border-radius: 4px; animation: fadeIn 0.5s; position: sticky; top: 20px; z-index: 10; transition: box-shadow 0.3s; width: 100%; max-width: 750px; text-align: center; }
         .current-class p { margin: 8px 0; font-size: 1.1em; }
         #progressBar { display: none; height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 10px; overflow: hidden; position: relative; }
         #progressFill { height: 100%; background: linear-gradient(90deg, #fff, #4fc3f7); width: 0; transition: width 1s linear; border-radius: 4px; }
         #progressBar:hover::after { content: attr(title); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #01579b; color: white; padding: 5px; border-radius: 5px; font-size: 0.9em; }
-        #liveClock {     text-align: center;color: #01579b;font-size: 1.1em;margin: 10px 0 50px 0; }
+        #liveClock {text-align: center;color: #01579b;font-size: 1.1em;margin: 10px 0 50px 0; }
         .table-container { margin-top: 20px; overflow-x: auto; }
-        table { width: 100%; border-collapse: collapse; background: #f5f5f5; border-radius: 10px; overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; background: #f6fbfd; border-radius: 10px; overflow: hidden; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
-        th { background: #01579b; color: white; font-weight: bold; }
+        th { background: #0288d1c4; color: white; font-weight: bold; }
         th::before { margin-right: 5px; }
         th:nth-child(1)::before { content: "🕐 "; }
         th:nth-child(2)::before { content: "📚 "; }
@@ -41,13 +41,13 @@
         tr:hover { background: #b3e5fc; }
         .highlight { background: #fff9c4 !important; }
         .search-match { font-weight: bold; color: #01579b; }
-        #notes { margin-top: 30px; }
+        #notes { margin-top: 50px; text-align: center;}
         #notes h3 { color: #01579b; margin-bottom: 12px; }
         #noteList li { background: #e1f5fe; padding: 12px; margin: 8px 0; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
         #noteList button { background: #d32f2f; padding: 6px 12px; font-size: 0.9em; }
         #noteList button:hover { background: #b71c1c; transform: translateY(-2px); }
         #attendanceSummary { margin: 10px 0; color: #01579b; font-weight: bold; }
-        h2 { font-size: 1.8em; border-bottom: 2px solid #0288d1; padding-bottom: 10px; margin-bottom: 15px; }
+        h2 { font-size: 1.5em; padding-bottom: 10px; margin-bottom: 15px; color: #0288d1 }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @media (max-width: 600px) {
             select, input, button { width: 100%; margin: 6px 0; }
@@ -61,6 +61,9 @@
             .controls, #notes, .current-class, button, #liveClock, #attendanceSummary, th:nth-child(4), td:nth-child(4) { display: none; }
             table { font-size: 12px; }
         }
+        .hidden { display: none; }
+
+
 
         /* My Custom Code - Raihan */
         /* TOP Section */
@@ -84,11 +87,11 @@
         .top-promotion a {
           color: #ffffff;
         }   
-
+        button#notificationBtn {background: #e0f1f9;color: #000;margin-bottom: 50px;}
         .site-footer {
-          background: #ffffff;
+          background: #fffffff2;
           border-top: 1px solid var(--border);
-          padding: 15px 10px;
+          padding: 25px 10px;
           text-align: center;
         }
         .site-footer .logo {
@@ -99,10 +102,26 @@
         }
         .site-footer a { color: #9c579b; text-decoration: none }
 
-
+        table tr th:nth-child(4),
+        table tr td:nth-child(4) {
+            display: none;
+        }
+        h2 {
+            text-align: center;
+        }
+        /* Responsive */
+        @media only screen and (max-width: 600px) {
+            .controls  {
+                grid-template-columns: auto;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+        }
     </style>
 </head>
 <body>
+
 
 
     <div class="top-promotion">
@@ -111,47 +130,45 @@
     </div>
 
 
-
-
     <div class="container">
 
-        <h1>HSC Class Routine Reminder for (XI)</h1>
-        <p style="text-align: center;">এইচএসসি ক্লাস রুটিন রিমাইন্ডার (একাদশ শ্রেণি)</p>
+        <h1>HSC Class Routine</h1>
+        <p style="text-align: center;">এইচএসসি ক্লাস রুটিন (একাদশ ও দ্বাদশ শ্রেণি)</p>
         <div id="liveClock" role="timer"></div>
         
         <!-- Live Clock -->
+        <div id="liveClock" role="timer"></div>
         
         <!-- Controls -->
         <div class="controls">
-            <div>
-                <label for="groupSelect">গ্রুপ সিলেক্ট করুন:</label>
-                <select id="groupSelect" aria-label="গ্রুপ সিলেক্ট করুন">
-                    <option value="">-- সিলেক্ট করুন --</option>
-                    <option value="science" selected>Science</option>
-                    <option value="commerce">Commerce</option>
-                    <option value="humanities">Humanities</option>
-                </select>
-            </div>
-            <br>
-            <label for="daySelect">দিন সিলেক্ট করুন:</label>
+
+            <select id="classSelect" aria-label="ক্লাস সিলেক্ট করুন">
+                <option value="xi" selected>XI - একাদশ</option>
+                <option value="xii">XII - দ্বাদশ</option>
+            </select>
+
+            <select id="groupSelect" aria-label="গ্রুপ সিলেক্ট করুন">
+                <option value="">-- সিলেক্ট করুন --</option>
+                <option value="science" selected>বিজ্ঞান - Science</option>
+                <option value="commerce">বাণিজ্য - Commerce</option>
+                <option value="humanities"> মানবিক - Humanities</option>
+            </select>
+
             <select id="daySelect" aria-label="দিন সিলেক্ট করুন">
                 <option value="">আজকের রুটিন</option>
                 <option value="sunday">রবিবার</option>
                 <option value="monday">সোমবার</option>
-                <option value="tuesday" selected>মঙ্গলবার</option>
+                <option value="tuesday" >মঙ্গলবার</option>
                 <option value="wednesday">বুধবার</option>
                 <option value="thursday">বৃহস্পতিবার</option>
             </select>
-            <br>
-            <br>
-            <br>
+            
             <input type="text" id="searchInput" placeholder="বিষয় (Bengali/English) বা রুম সার্চ করুন (যেমন: বাংলা, Physics, Lab-1)" aria-label="বিষয় বা রুম সার্চ করুন">
             <button onclick="searchRoutine()">সার্চ</button>
             <button onclick="clearSearch()">সার্চ ক্লিয়ার</button>
             <button style="display: none;" onclick="window.print()">প্রিন্ট করুন</button>
             <br>
-            <br>
-            <button id="notificationBtn" onclick="toggleNotifications()">🔔 নোটিফিকেশন চালু করুন</button>
+            <!-- <button id="notificationBtn" onclick="toggleNotifications()">🔔 নোটিফিকেশন চালু</button> -->
             <button style="display: none;" onclick="resetAttendance()">অ্যাটেন্ডেন্স রিসেট</button>
         </div>
         
@@ -165,12 +182,25 @@
         </div>
         
         <!-- Attendance Summary -->
-        <div id="attendanceSummary"></div>
+        <div id="attendanceSummary" style="display: none;"></div>
         
-        <!-- Routine Table -->
+        <!-- Routine Tables -->
         <h2 id="todayHeader">আজকের রুটিন</h2>
-        <div class="table-container">
-            <table id="routine">
+        <div class="table-container" id="xiTable">
+            <table id="routine-xi">
+                <thead>
+                    <tr>
+                        <th>সময়</th>
+                        <th>বিষয়</th>
+                        <th>রুম নং</th>
+                        <th>অ্যাটেন্ডেন্স</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+        <div class="table-container hidden" id="xiiTable">
+            <table id="routine-xii">
                 <thead>
                     <tr>
                         <th>সময়</th>
@@ -185,6 +215,8 @@
         
         <!-- Custom Notes -->
         <div id="notes">
+            <button id="notificationBtn" onclick="toggleNotifications()">🔔 নোটিফিকেশন চালু</button>
+
             <h3>নোট যোগ করুন (যেমন: অ্যাসাইনমেন্ট ডেডলাইন)</h3>
             <input type="text" id="noteInput" placeholder="নোট লিখুন..." aria-label="নোট লিখুন">
             <input type="date" id="noteDueDate" aria-label="ডেডলাইন তারিখ">
@@ -194,7 +226,9 @@
             <button style="display: none;" onclick="exportNotes('excel')">Excel হিসেবে এক্সপোর্ট</button>
             <ul id="noteList"></ul>
         </div>
+
     </div>
+
 
     <!-- Footer -->
     <div class="site-footer">
@@ -204,6 +238,7 @@
       </div>
     </div>
     <!-- // Footer -->
+
 
     <script>
         // Subject translations (English to Bengali)
@@ -234,134 +269,265 @@
 
         // Routine Data
         const routineData = {
-            "science": {
-                "sunday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
-                ],
-                "monday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-1"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৭)", "room": "Lab-2"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০২)", "room": "A-101"}
-                ],
-                "tuesday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
-                ],
-                "wednesday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-1"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৭)", "room": "Lab-2"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-101"}
-                ],
-                "thursday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "বাংলা (১০২)", "room": "A-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "ইংরেজী (১০৮)", "room": "B-102"}
-                ]
+            "xi": {
+                "science": {
+                    "sunday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
+                    ],
+                    "monday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০২)", "room": "A-101"}
+                    ],
+                    "tuesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
+                    ],
+                    "wednesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৫)", "room": "Math-101"}
+                    ],
+                    "thursday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৪)", "room": "Lab-1"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৬)", "room": "Lab-2"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৮)", "room": "Bio-Lab"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "বাংলা (১০২)", "room": "A-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ইংরেজী (১০৮)", "room": "B-102"}
+                    ]
+                },
+                "commerce": {
+                    "sunday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-101"}
+                    ],
+                    "monday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১১০)", "room": "Eco-102"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-101"}
+                    ],
+                    "tuesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-101"}
+                    ],
+                    "wednesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "সাচিবিকবিদ্যা (২৩৬)", "room": "Sec-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-101"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১১০)", "room": "Eco-102"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০১)", "room": "A-101"}
+                    ],
+                    "thursday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-101"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"}
+                    ]
+                },
+                "humanities": {
+                    "sunday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৪)", "room": "His-102"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"}
+                    ],
+                    "monday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭১)", "room": "SW-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-101"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ইসলামী ইতিহাস (২৬৭)", "room": "IH-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৩)", "room": "HS-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "কৃষি শিক্ষা (২৩৯)", "room": "Agri-101"}
+                    ],
+                    "tuesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-101"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "সমাজবিজ্ঞান (১১৮)", "room": "Soc-101"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ইতিহাস (৩০৫)", "room": "His-102"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২২)", "room": "Logic-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৭০)", "room": "Civ-101"}
+                    ],
+                    "wednesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭২)", "room": "SW-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "ইসলামী ইতিহাস (২৬৮)", "room": "IH-101"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৪)", "room": "HS-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "কৃষি শিক্ষা (২৪০)", "room": "Agri-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ইসলাম শিক্ষা (২৪৯)", "room": "IE-101"}
+                    ],
+                    "thursday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-101"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৪)", "room": "His-102"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-101"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-101"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-101"}
+                    ]
+                }
             },
-            "commerce": {
-                "sunday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-101"}
-                ],
-                "monday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১১০)", "room": "Eco-102"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-101"}
-                ],
-                "tuesday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-101"}
-                ],
-                "wednesday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "সাচিবিকবিদ্যা (২৩৬)", "room": "Sec-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-101"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১১০)", "room": "Eco-102"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০১)", "room": "A-101"}
-                ],
-                "thursday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-101"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-102"}
-                ]
-            },
-            "humanities": {
-                "sunday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৪)", "room": "His-102"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"}
-                ],
-                "monday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-102"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭১)", "room": "SW-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-101"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "ইসলামী ইতিহাস (২৬৭)", "room": "IH-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৩)", "room": "HS-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "কৃষি শিক্ষা (২৩৯)", "room": "Agri-101"}
-                ],
-                "tuesday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-101"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "সমাজবিজ্ঞান (১১৮)", "room": "Soc-101"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "ইতিহাস (৩০৫)", "room": "His-102"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২২)", "room": "Logic-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৭০)", "room": "Civ-101"}
-                ],
-                "wednesday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-102"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭২)", "room": "SW-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "ইসলামী ইতিহাস (২৬৮)", "room": "IH-101"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৪)", "room": "HS-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "কৃষি শিক্ষা (২৪০)", "room": "Agri-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "ইসলাম শিক্ষা (২৪৯)", "room": "IE-101"}
-                ],
-                "thursday": [
-                    {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab"},
-                    {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-101"},
-                    {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৪)", "room": "His-102"},
-                    {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-101"},
-                    {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-101"},
-                    {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-101"}
-                ]
+            "xii": {
+                "science": {
+                    "sunday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-202"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-3"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৭)", "room": "Lab-4"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab-2"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-201"}
+                    ],
+                    "monday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-3"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৭)", "room": "Lab-4"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab-2"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০১)", "room": "A-201"}
+                    ],
+                    "tuesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-202"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-3"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (১৭৭)", "room": "Lab-4"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab-2"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-201"}
+                    ],
+                    "wednesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৮)", "room": "B-202"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-3"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "রসায়ন (১৭৭)", "room": "Lab-4"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab-2"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উচ্চতর গণিত (২৬৬)", "room": "Math-201"}
+                    ],
+                    "thursday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "পদার্থ (১৭৫)", "room": "Lab-3"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "রসায়ন (�１৭৭)", "room": "Lab-4"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "জীববিজ্ঞান (১৭৯)", "room": "Bio-Lab-2"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "বাংলা (১০১)", "room": "A-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ইংরেজী (১০৭)", "room": "B-202"}
+                    ]
+                },
+                "commerce": {
+                    "sunday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১১০)", "room": "Eco-202"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-201"}
+                    ],
+                    "monday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-202"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-202"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "সাচিবিকবিদ্যা (২৩৬)", "room": "Sec-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-201"}
+                    ],
+                    "tuesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-202"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-201"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১১০)", "room": "Eco-202"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ব্যবসায় সংগঠন (২৭৮)", "room": "Bus-201"}
+                    ],
+                    "wednesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "সাচিবিকবিদ্যা (২৩৫)", "room": "Sec-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৭)", "room": "Prod-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "হিসাববিজ্ঞান (২৫৩)", "room": "Acc-201"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "অর্থনীতি (১০৯)", "room": "Eco-202"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "ব্যবসায় সংগঠন (২৭৭)", "room": "Bus-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "বাংলা (১০২)", "room": "A-201"}
+                    ],
+                    "thursday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-202"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "সাচিবিকবিদ্যা (২৩৬)", "room": "Sec-201"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "উৎপাদন ব্যবস্থাপনা (২৮৬)", "room": "Prod-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "হিসাববিজ্ঞান (২৫৪)", "room": "Acc-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "অর্থনীতি (১১০)", "room": "Eco-202"}
+                    ]
+                },
+                "humanities": {
+                    "sunday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০২)", "room": "A-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৮)", "room": "Soc-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৫)", "room": "His-202"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২২)", "room": "Logic-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"}
+                    ],
+                    "monday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৮)", "room": "B-202"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭২)", "room": "SW-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "পৌরনীতি (২৭০)", "room": "Civ-201"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ইসলামী ইতিহাস (২৬৮)", "room": "IH-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৪)", "room": "HS-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "কৃষি শিক্ষা (২৪০)", "room": "Agri-201"}
+                    ],
+                    "tuesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "বাংলা (১০১)", "room": "A-201"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "ইংরেজী (১০৭)", "room": "B-202"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "সমাজবিজ্ঞান (১১৭)", "room": "Soc-201"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ইতিহাস (৩০৪)", "room": "His-202"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২১)", "room": "Logic-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৬৯)", "room": "Civ-201"}
+                    ],
+                    "wednesday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ইংরেজী (১০৭)", "room": "B-202"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজকর্ম (২৭১)", "room": "SW-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "ইসলামী ইতিহাস (২৬৭)", "room": "IH-201"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "গার্হস্থ্য বিজ্ঞান (২৭৩)", "room": "HS-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "কৃষি শিক্ষা (২৩৯)", "room": "Agri-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "ইসলাম শিক্ষা (২৪৯)", "room": "IE-201"}
+                    ],
+                    "thursday": [
+                        {"time": "9:00 AM-9:45 AM", "subject": "ICT (২৭৫)", "room": "Comp-Lab-2"},
+                        {"time": "9:50 AM-10:35 AM", "subject": "সমাজবিজ্ঞান (১১৮)", "room": "Soc-201"},
+                        {"time": "10:40 AM-11:25 AM", "subject": "ইতিহাস (৩০৫)", "room": "His-202"},
+                        {"time": "11:30 AM-12:15 PM", "subject": "ভূগোল (১২৫)", "room": "Geo-201"},
+                        {"time": "1:00 PM-1:45 PM", "subject": "যুক্তিবিদ্যা (১২২)", "room": "Logic-201"},
+                        {"time": "1:50 PM-2:35 PM", "subject": "পৌরনীতি (২৭০)", "room": "Civ-201"}
+                    ]
+                }
             }
         };
 
+        let currentClass = 'xi';
         let currentGroup = 'science';
         let selectedDay = '';
         let notes = JSON.parse(localStorage.getItem('customNotes')) || [];
@@ -384,7 +550,15 @@
             }
         });
 
-        // Group and Day select change
+        // Class, Group, and Day select change
+        document.getElementById('classSelect').addEventListener('change', function() {
+            currentClass = this.value;
+            showRoutine();
+            updateCurrentClass();
+            updateAttendanceSummary();
+            startReminders();
+        });
+
         document.getElementById('groupSelect').addEventListener('change', function() {
             currentGroup = this.value;
             showRoutine();
@@ -399,35 +573,41 @@
             updateAttendanceSummary();
         });
 
-        // Show routine based on selected day or today
+        // Show routine based on selected class, group, and day
         function showRoutine() {
+            const xiTable = document.getElementById('xiTable');
+            const xiiTable = document.getElementById('xiiTable');
+            xiTable.classList.toggle('hidden', currentClass !== 'xi');
+            xiiTable.classList.toggle('hidden', currentClass !== 'xii');
+            
             if (!currentGroup) {
-                document.getElementById('routine').querySelector('tbody').innerHTML = '<tr><td colspan="4">গ্রুপ সিলেক্ট করুন</td></tr>';
-                document.getElementById('todayHeader').textContent = 'রুটিন';
+                const tbody = document.getElementById(`routine-${currentClass}`).querySelector('tbody');
+                tbody.innerHTML = '<tr><td colspan="4">গ্রুপ সিলেক্ট করুন</td></tr>';
+                document.getElementById('todayHeader').textContent = `রুটিন (ক্লাস ${currentClass.toUpperCase()})`;
                 document.getElementById('attendanceSummary').textContent = '';
                 return;
             }
             const day = selectedDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-            const routine = routineData[currentGroup][day] || [];
-            const tbody = document.getElementById('routine').querySelector('tbody');
+            const routine = routineData[currentClass][currentGroup][day] || [];
+            const tbody = document.getElementById(`routine-${currentClass}`).querySelector('tbody');
             tbody.innerHTML = '';
             if (routine.length === 0) {
                 tbody.innerHTML = '<tr><td colspan="4">এই দিনে কোন ক্লাস নেই।</td></tr>';
             } else {
                 routine.forEach(item => {
-                    const isAttended = localStorage.getItem(`attendance_${currentGroup}_${day}_${item.time}_${item.subject}`) === 'true';
+                    const isAttended = localStorage.getItem(`attendance_${currentClass}_${currentGroup}_${day}_${item.time}_${item.subject}`) === 'true';
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${item.time}</td>
                         <td>${item.subject}</td>
                         <td>${item.room}</td>
-                        <td><input type="checkbox" ${isAttended ? 'checked' : ''} onchange="toggleAttendance('${currentGroup}', '${day}', '${item.time}', '${item.subject}', this.checked)"></td>
+                        <td><input type="checkbox" ${isAttended ? 'checked' : ''} onchange="toggleAttendance('${currentClass}', '${currentGroup}', '${day}', '${item.time}', '${item.subject}', this.checked)"></td>
                     `;
                     if (!selectedDay && isCurrentClass(item)) row.classList.add('highlight');
                     tbody.appendChild(row);
                 });
             }
-            document.getElementById('todayHeader').textContent = selectedDay ? `${day.toUpperCase()} - ${currentGroup.toUpperCase()} এর রুটিন` : `আজকের রুটিন (${day.toUpperCase()}) - ${currentGroup.toUpperCase()}`;
+            document.getElementById('todayHeader').textContent = selectedDay ? `${day.toUpperCase()} - ${currentGroup.toUpperCase()} এর রুটিন (ক্লাস ${currentClass.toUpperCase()})` : `আজকের রুটিন (${day.toUpperCase()}) - ${currentGroup.toUpperCase()} (ক্লাস ${currentClass.toUpperCase()})`;
             updateAttendanceSummary();
         }
 
@@ -461,8 +641,8 @@
             }
             const now = new Date();
             const today = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-            const routine = routineData[currentGroup][today] || [];
-            let currentClass = null;
+            const routine = routineData[currentClass][currentGroup][today] || [];
+            let currentClassItem = null;
             let nextClass = null;
 
             routine.forEach(item => {
@@ -472,21 +652,21 @@
                 const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM);
                 const classEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
                 if (now >= classStart && now <= classEnd) {
-                    currentClass = item;
+                    currentClassItem = item;
                 }
                 if (!nextClass && now < classStart) {
                     nextClass = item;
                 }
             });
 
-            if (currentClass) {
-                const [startTime, endTime] = currentClass.time.split('-').map(t => t.trim());
+            if (currentClassItem) {
+                const [startTime, endTime] = currentClassItem.time.split('-').map(t => t.trim());
                 const { hours: startH, minutes: startM } = parseTime(startTime);
                 const { hours: endH, minutes: endM } = parseTime(endTime);
                 const classStart = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startH, startM);
                 const classEnd = new Date(now.getFullYear(), now.getMonth(), now.getDate(), endH, endM);
                 const endTimeStr = classEnd.toLocaleTimeString('en-US', { hour12: true, hour: 'numeric', minute: '2-digit' });
-                document.getElementById('currentClass').textContent = `🕑 চলমান ক্লাস: ${currentClass.subject} (Room: ${currentClass.room}) | শেষ হবে ${endTimeStr}`;
+                document.getElementById('currentClass').textContent = `🕑 চলমান ক্লাস: ${currentClassItem.subject} (Room: ${currentClassItem.room}) | শেষ হবে ${endTimeStr}`;
                 const totalDuration = classEnd - classStart;
                 const timeLeftMs = classEnd - now;
                 if (timeLeftMs > 0) {
@@ -520,16 +700,16 @@
         }
 
         // Attendance tracking
-        function toggleAttendance(group, day, time, subject, checked) {
-            localStorage.setItem(`attendance_${group}_${day}_${time}_${subject}`, checked);
+        function toggleAttendance(classLevel, group, day, time, subject, checked) {
+            localStorage.setItem(`attendance_${classLevel}_${group}_${day}_${time}_${subject}`, checked);
             updateAttendanceSummary();
         }
 
         function updateAttendanceSummary() {
             if (!currentGroup) return;
             const day = selectedDay || new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-            const routine = routineData[currentGroup][day] || [];
-            const attended = routine.filter(item => localStorage.getItem(`attendance_${currentGroup}_${day}_${item.time}_${item.subject}`) === 'true').length;
+            const routine = routineData[currentClass][currentGroup][day] || [];
+            const attended = routine.filter(item => localStorage.getItem(`attendance_${currentClass}_${currentGroup}_${day}_${item.time}_${item.subject}`) === 'true').length;
             const total = routine.length;
             document.getElementById('attendanceSummary').textContent = total ? `আজ ${attended}/${total} ক্লাস অ্যাটেন্ড করা হয়েছে` : '';
         }
@@ -552,8 +732,8 @@
                 return;
             }
             let results = [];
-            Object.keys(routineData[currentGroup]).forEach(day => {
-                routineData[currentGroup][day].forEach(item => {
+            Object.keys(routineData[currentClass][currentGroup]).forEach(day => {
+                routineData[currentClass][currentGroup][day].forEach(item => {
                     let matched = false;
                     let subjectDisplay = item.subject;
                     let roomDisplay = item.room;
@@ -582,18 +762,18 @@
                     }
                 });
             });
-            const tbody = document.getElementById('routine').querySelector('tbody');
+            const tbody = document.getElementById(`routine-${currentClass}`).querySelector('tbody');
             tbody.innerHTML = '';
-            document.getElementById('todayHeader').textContent = `সার্চ ফলাফল: "${query}"`;
+            document.getElementById('todayHeader').textContent = `সার্চ ফলাফল: "${query}" (ক্লাস ${currentClass.toUpperCase()})`;
             if (results.length) {
                 results.forEach(r => {
-                    const isAttended = localStorage.getItem(`attendance_${currentGroup}_${r.day}_${r.time}_${r.subject}`) === 'true';
+                    const isAttended = localStorage.getItem(`attendance_${currentClass}_${currentGroup}_${r.day}_${r.time}_${r.subject}`) === 'true';
                     const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>${r.day.toUpperCase()} ${r.time}</td>
                         <td>${r.subjectDisplay}</td>
                         <td>${r.roomDisplay}</td>
-                        <td><input type="checkbox" ${isAttended ? 'checked' : ''} onchange="toggleAttendance('${currentGroup}', '${r.day}', '${r.time}', '${r.subject}', this.checked)"></td>
+                        <td><input type="checkbox" ${isAttended ? 'checked' : ''} onchange="toggleAttendance('${currentClass}', '${currentGroup}', '${r.day}', '${r.time}', '${r.subject}', this.checked)"></td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -611,20 +791,20 @@
         function toggleNotifications() {
             if (notificationEnabled) {
                 notificationEnabled = false;
-                document.getElementById('notificationBtn').innerHTML = '🔔 নোটিফিকেশন চালু করুন';
+                document.getElementById('notificationBtn').innerHTML = '🔔 নোটিফিকেশন চালু';
                 alert('নোটিফিকেশন বন্ধ করা হয়েছে!');
             } else {
                 if (Notification.permission === 'granted') {
                     notificationEnabled = true;
-                    document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ করুন';
-                    alert('নোটিফিকেশন চালু করা হয়েছে!!');
+                    document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ';
+                    alert('নোটিফিকেশন চালু!');
                     startReminders();
                 } else {
                     Notification.requestPermission().then(permission => {
                         if (permission === 'granted') {
                             notificationEnabled = true;
-                            document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ করুন';
-                            alert('নোটিফিকেশন চালু করুন!');
+                            document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ';
+                            alert('নোটিফিকেশন চালু!');
                             startReminders();
                         }
                     });
@@ -638,7 +818,7 @@
             setInterval(() => {
                 const now = new Date();
                 const today = now.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                const routine = routineData[currentGroup][today] || [];
+                const routine = routineData[currentClass][currentGroup][today] || [];
                 routine.forEach(item => {
                     const [startTime] = item.time.split('-').map(t => t.trim());
                     const { hours: h, minutes: m } = parseTime(startTime);
@@ -680,7 +860,7 @@
             }
         }
 
-        // Show notes
+// Show notes
         function showNotes() {
             const list = document.getElementById('noteList');
             list.innerHTML = notes.map((n, index) => `<li>${n.text} - ${n.date}${n.dueDate ? ` (ডেডলাইন: ${n.dueDate})` : ''} <button onclick="deleteNote(${index})">মুছুন</button></li>`).join('');
