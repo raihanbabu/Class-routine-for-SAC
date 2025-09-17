@@ -8,10 +8,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: linear-gradient(135deg, #b3e5fc, #4fc3f7); min-height: 100vh; padding: 20px; color: #212121; }
-        .container { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 20px; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0288d11f; min-height: 100vh; padding: 0; color: #212121; }
+        .container { max-width: 900px; margin: 100px auto; background: white; padding: 20px; border-radius: 4px; box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15); }
         h1 { text-align: center; color: #01579b; font-size: 2.5em; margin-bottom: 25px; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); }
-        .controls { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: center; margin-bottom: 25px; }
+        .controls { display: block; text-align: center;grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; align-items: center; margin-bottom: 25px; }
         select, input { padding: 12px; border: 1px solid #0288d1; border-radius: 10px; font-size: 1em; background: #f5f5f5; transition: border-color 0.3s; }
         select:focus, input:focus { border-color: #01579b; outline: none; }
         button { padding: 12px 24px; background: #0288d1; color: white; border: none; border-radius: 10px; cursor: pointer; font-size: 1em; transition: background 0.3s, transform 0.2s; position: relative; }
@@ -27,7 +27,7 @@
         #progressBar { display: none; height: 8px; background: #e0e0e0; border-radius: 4px; margin-top: 10px; overflow: hidden; position: relative; }
         #progressFill { height: 100%; background: linear-gradient(90deg, #fff, #4fc3f7); width: 0; transition: width 1s linear; border-radius: 4px; }
         #progressBar:hover::after { content: attr(title); position: absolute; top: -25px; left: 50%; transform: translateX(-50%); background: #01579b; color: white; padding: 5px; border-radius: 5px; font-size: 0.9em; }
-        #liveClock { text-align: right; color: #01579b; font-size: 1.1em; margin-bottom: 10px; }
+        #liveClock {     text-align: center;color: #01579b;font-size: 1.1em;margin: 10px 0 50px 0; }
         .table-container { margin-top: 20px; overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; background: #f5f5f5; border-radius: 10px; overflow: hidden; }
         th, td { padding: 15px; text-align: left; border-bottom: 1px solid #e0e0e0; }
@@ -61,24 +61,78 @@
             .controls, #notes, .current-class, button, #liveClock, #attendanceSummary, th:nth-child(4), td:nth-child(4) { display: none; }
             table { font-size: 12px; }
         }
+
+        /* My Custom Code - Raihan */
+        /* TOP Section */
+        .controls label {
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 10px;
+        }
+        .top-promotion {
+            padding: 16px 10px;
+            text-align: center;
+            background-color: #9c579b;
+            color: #ffffff;
+            position: fixed;
+            z-index: 1;
+            width: 100%;
+            top: 0;
+            left: 0;
+            right: 0;
+          }
+        .top-promotion a {
+          color: #ffffff;
+        }   
+
+        .site-footer {
+          background: #ffffff;
+          border-top: 1px solid var(--border);
+          padding: 15px 10px;
+          text-align: center;
+        }
+        .site-footer .logo {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: block;
+        }
+        .site-footer a { color: #9c579b; text-decoration: none }
+
+
     </style>
 </head>
 <body>
+
+
+    <div class="top-promotion">
+        <p> আমরা <b>HSC ICT পড়াই</b> — সহজভাবে, প্র্যাকটিক্যালভাবে। যোগাযোগ: <a href="https://www.facebook.com/shofol.academy">Shofol Academy</a> </p>
+        <!-- <p>আমরা <b>HSC ICT পড়াই</b> — সহজভাবে, প্র্যাকটিক্যালভাবে। 📞 যোগাযোগ: <a href="tel:8801862521286">01862-521286</a>, <a href="tel:8801777132423">01777-132423</a></p> -->
+    </div>
+
+
+
+
     <div class="container">
-        <h1>HSC Class Routine Reminder (XI)</h1>
+
+        <h1>HSC Class Routine Reminder for (XI)</h1>
+        <p style="text-align: center;">এইচএসসি ক্লাস রুটিন রিমাইন্ডার (একাদশ শ্রেণি)</p>
+        <div id="liveClock" role="timer"></div>
         
         <!-- Live Clock -->
-        <div id="liveClock" role="timer"></div>
         
         <!-- Controls -->
         <div class="controls">
-            <label for="groupSelect">গ্রুপ সিলেক্ট করুন:</label>
-            <select id="groupSelect" aria-label="গ্রুপ সিলেক্ট করুন">
-                <option value="">-- সিলেক্ট করুন --</option>
-                <option value="science" selected>Science</option>
-                <option value="commerce">Commerce</option>
-                <option value="humanities">Humanities</option>
-            </select>
+            <div>
+                <label for="groupSelect">গ্রুপ সিলেক্ট করুন:</label>
+                <select id="groupSelect" aria-label="গ্রুপ সিলেক্ট করুন">
+                    <option value="">-- সিলেক্ট করুন --</option>
+                    <option value="science" selected>Science</option>
+                    <option value="commerce">Commerce</option>
+                    <option value="humanities">Humanities</option>
+                </select>
+            </div>
+            <br>
             <label for="daySelect">দিন সিলেক্ট করুন:</label>
             <select id="daySelect" aria-label="দিন সিলেক্ট করুন">
                 <option value="">আজকের রুটিন</option>
@@ -88,12 +142,17 @@
                 <option value="wednesday">বুধবার</option>
                 <option value="thursday">বৃহস্পতিবার</option>
             </select>
+            <br>
+            <br>
+            <br>
             <input type="text" id="searchInput" placeholder="বিষয় (Bengali/English) বা রুম সার্চ করুন (যেমন: বাংলা, Physics, Lab-1)" aria-label="বিষয় বা রুম সার্চ করুন">
             <button onclick="searchRoutine()">সার্চ</button>
             <button onclick="clearSearch()">সার্চ ক্লিয়ার</button>
-            <button onclick="window.print()">প্রিন্ট করুন</button>
-            <button id="notificationBtn" onclick="toggleNotifications()">🔔 নোটিফিকেশন চালু</button>
-            <button onclick="resetAttendance()">অ্যাটেন্ডেন্স রিসেট</button>
+            <button style="display: none;" onclick="window.print()">প্রিন্ট করুন</button>
+            <br>
+            <br>
+            <button id="notificationBtn" onclick="toggleNotifications()">🔔 নোটিফিকেশন চালু করুন</button>
+            <button style="display: none;" onclick="resetAttendance()">অ্যাটেন্ডেন্স রিসেট</button>
         </div>
         
         <!-- Current Class and Time Left -->
@@ -126,16 +185,25 @@
         
         <!-- Custom Notes -->
         <div id="notes">
-            <h3>কাস্টম নোট যোগ করুন (যেমন: অ্যাসাইনমেন্ট ডেডলাইন)</h3>
+            <h3>নোট যোগ করুন (যেমন: অ্যাসাইনমেন্ট ডেডলাইন)</h3>
             <input type="text" id="noteInput" placeholder="নোট লিখুন..." aria-label="নোট লিখুন">
             <input type="date" id="noteDueDate" aria-label="ডেডলাইন তারিখ">
             <button onclick="addNote()">যোগ করুন</button>
-            <button onclick="exportNotes('txt')">টেক্সট হিসেবে এক্সপোর্ট</button>
-            <button onclick="exportNotes('pdf')">PDF হিসেবে এক্সপোর্ট</button>
-            <button onclick="exportNotes('excel')">Excel হিসেবে এক্সপোর্ট</button>
+            <button style="display: none;" onclick="exportNotes('txt')">টেক্সট হিসেবে এক্সপোর্ট</button>
+            <button style="display: none;" onclick="exportNotes('pdf')">PDF হিসেবে এক্সপোর্ট</button>
+            <button style="display: none;" onclick="exportNotes('excel')">Excel হিসেবে এক্সপোর্ট</button>
             <ul id="noteList"></ul>
         </div>
     </div>
+
+    <!-- Footer -->
+    <div class="site-footer">
+        <span class="logo"><a href="https://www.facebook.com/shofol.academy" target="_blank">Shofol Academy</a></span>
+      <div class="footer-bottom">
+        Contribution by <a href="https://www.facebook.com/raihanbabubd" target="_blank">Raihan</a> | <a href="https://grok.com" target="_blank">Grok</a> | <a href="https://www.facebook.com/raihanbabubd" target="_blank">Visit us on Facebook</a>
+      </div>
+    </div>
+    <!-- // Footer -->
 
     <script>
         // Subject translations (English to Bengali)
@@ -543,20 +611,20 @@
         function toggleNotifications() {
             if (notificationEnabled) {
                 notificationEnabled = false;
-                document.getElementById('notificationBtn').innerHTML = '🔔 নোটিফিকেশন চালু';
+                document.getElementById('notificationBtn').innerHTML = '🔔 নোটিফিকেশন চালু করুন';
                 alert('নোটিফিকেশন বন্ধ করা হয়েছে!');
             } else {
                 if (Notification.permission === 'granted') {
                     notificationEnabled = true;
-                    document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ';
-                    alert('নোটিফিকেশন চালু!');
+                    document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ করুন';
+                    alert('নোটিফিকেশন চালু করা হয়েছে!!');
                     startReminders();
                 } else {
                     Notification.requestPermission().then(permission => {
                         if (permission === 'granted') {
                             notificationEnabled = true;
-                            document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ';
-                            alert('নোটিফিকেশন চালু!');
+                            document.getElementById('notificationBtn').innerHTML = '🔕 নোটিফিকেশন বন্ধ করুন';
+                            alert('নোটিফিকেশন চালু করুন!');
                             startReminders();
                         }
                     });
